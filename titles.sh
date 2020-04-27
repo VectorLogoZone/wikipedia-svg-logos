@@ -34,8 +34,8 @@ echo "INFO: extracting logo svgs"
 
 grep "\.svg$" enwiki-20200426-all-media-titles \
     | grep -i logo \
-    | tail -n 10 - \
     >svg_logos.txt
+#    | tail -n 10 - \
 
 echo "INFO: found $(cat svg_logos.txt | wc -l) svg logos"
 
@@ -43,7 +43,7 @@ echo '{}' \
     | jq '.handle|="wikipedia-titles"' \
     | jq ".lastmodified|=\"$(date -u  +%Y-%m-%dT%H:%M:%SZ)\"" \
     | jq '.name|="Wikipedia Titles"' \
-    | jq '.provider|="direct"' \
+    | jq '.provider|="remote"' \
     | jq '.provider_icon|="https://www.vectorlogo.zone/logos/wikipedia/wikipedia-icon.svg"' \
     | jq '.url|="https://en.wikipedia.org/"' \
     | jq --sort-keys . \
@@ -53,17 +53,24 @@ echo '{}' \
 echo "INFO: convert text to json"
 
 cat svg_logos.txt \
-    | jq --raw-input --slurp 'split("\n") | map(select(. != "")) | map( {img: (.), name: (.[0:-4]), url: ("http://abc/" + .)} )' \
+    | while read -r line; do
+        echo "$(printf %s "$line" | md5sum | cut -c 1-2),$line"
+    done \
+    | jq --raw-input --slurp 'split("\n") | map(select(. != "")) | map( {img: ("https://upload.wikimedia.org/wikipedia/en/" + .[0:1] + "/" + .[0:2] + "/" + .[3:]), name: (.[3:-4]), src: ("https://en.wikipedia.org/wiki/File:" + .)} )' \
     > svg_logos.json
 
 echo "INFO: merging json array into sourceData"
 
-jq \
-    --argjson images "$(<svg_logos.json)" \
-    '.images = $images' \
+#jq \
+#    --argjson images "$(<svg_logos.json)" \
+#    '.images = $images' \
+#    metadata.json \
+#    > sourceData.json
+jq --sort-keys \
+    '.images += input' \
     metadata.json \
-    > sourceData.json
-
+    svg_logos.json \
+    >sourceData.json
 
 #    | jq -R '. | {img: (.), name: (.[0:-4]), url: ("http://abc/" + .)}'
   #"handle": "adamfairhead",

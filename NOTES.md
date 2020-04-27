@@ -32,6 +32,13 @@ image metadata? enwiki-20200120-image.sql.gz
 
 https://dumps.wikimedia.org/wikidatawiki/20200120/wikidatawiki-20200120-pages-articles.xml.bz2
 
+Calculating the image hash directories:
+https://stackoverflow.com/questions/13638579/how-to-construct-full-url-from-wikipedia-file-tag-in-wikimedia-markup
+
+https://upload.wikimedia.org/wikipedia/en/1/19/007_logo.svg
+echo -n "007_logo.svg" | md5sum | cut -c 1-2
+
+
 ## Update process flow
 
 - stream download
