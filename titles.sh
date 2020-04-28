@@ -40,11 +40,13 @@ grep "\.svg$" enwiki-20200426-all-media-titles \
 echo "INFO: found $(cat svg_logos.txt | wc -l) svg logos"
 
 echo '{}' \
+    | jq '.data.description|="SVG files on the English Wikipedia with logo in the name"' \
     | jq '.handle|="wikipedia-titles"' \
     | jq ".lastmodified|=\"$(date -u  +%Y-%m-%dT%H:%M:%SZ)\"" \
-    | jq '.name|="Wikipedia Titles"' \
+    | jq '.logo|="https://www.vectorlogo.zone/logos/wikipedia/wikipedia-icon.svg"' \
+    | jq '.name|="Wikipedia"' \
     | jq '.provider|="remote"' \
-    | jq '.provider_icon|="https://www.vectorlogo.zone/logos/wikipedia/wikipedia-icon.svg"' \
+    | jq '.provider_icon|="https://logosear.ch/images/remote.svg"' \
     | jq '.url|="https://en.wikipedia.org/"' \
     | jq --sort-keys . \
     > metadata.json
@@ -56,7 +58,7 @@ cat svg_logos.txt \
     | while read -r line; do
         echo "$(printf %s "$line" | md5sum | cut -c 1-2),$line"
     done \
-    | jq --raw-input --slurp 'split("\n") | map(select(. != "")) | map( {img: ("https://upload.wikimedia.org/wikipedia/en/" + .[0:1] + "/" + .[0:2] + "/" + .[3:]), name: (.[3:-4]), src: ("https://en.wikipedia.org/wiki/File:" + .)} )' \
+    | jq --raw-input --slurp 'split("\n") | map(select(. != "")) | map( {img: ("https://upload.wikimedia.org/wikipedia/en/" + .[0:1] + "/" + .[0:2] + "/" + .[3:]), name: (.[3:-4]), src: ("https://en.wikipedia.org/wiki/File:" + .[3:])} )' \
     > svg_logos.json
 
 echo "INFO: merging json array into sourceData"
