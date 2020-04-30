@@ -1,5 +1,6 @@
 *~
 *.amp.html
+build/
 .cache
 *.class
 crash.log
@@ -10,6 +11,7 @@ dist/
 .idea/
 .jekyll-metadata
 node_modules/
+output/
 *.pyc
 .sass-cache/
 _site/

@@ -13,66 +13,81 @@ set -o errexit
 set -o pipefail
 set -o nounset
 
-DATE=20200426
-#$(date -u +%Y%m%d)
-MEDIA_DUMP="enwiki-${DATE}-all-media-titles"
-MEDIA_DOWNLOAD="https://dumps.wikimedia.org/other/mediatitles/${DATE}/enwiki-${DATE}-all-media-titles.gz"
+LANG=${1:-BAD}
+if [ "${LANG}" == "BAD" ]; then
+    echo "usage: titles.sh language [date]"
+    exit 1
+fi
+
+#LATER: check that jq & curl are installed
 
 echo "INFO: Starting titles at $(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
-if [ -f "${MEDIA_DUMP}" ]; then
+DATE=20200426
+#$(date -u +%Y%m%d)
+OUTPUT_DIR=./output
+if [ ! -d "${OUTPUT_DIR}" ]; then
+    echo "INFO: creating output directory ${OUTPUT_DIR}"
+    mkdir -p "${OUTPUT_DIR}"
+fi
+
+TMP_DIR=./tmp
+if [ ! -d "${TMP_DIR}" ]; then
+    echo "INFO: creating output directory ${TMP_DIR}"
+    mkdir -p "${TMP_DIR}"
+fi
+
+MEDIA_DUMP="${LANG}wiki-${DATE}-all-media-titles"
+
+if [ -f "${TMP_DIR}/${MEDIA_DUMP}" ]; then
     echo "INFO: using existing download ${MEDIA_DUMP}"
 else
+    MEDIA_DOWNLOAD="https://dumps.wikimedia.org/other/mediatitles/${DATE}/${LANG}wiki-${DATE}-all-media-titles.gz"
     echo "INFO: downloading ${MEDIA_DOWNLOAD}..."
     curl \
         "${MEDIA_DOWNLOAD}" \
         | gunzip - \
-        > "${MEDIA_DUMP}"
+        > "${TMP_DIR}/${MEDIA_DUMP}"
 fi
 
 echo "INFO: extracting logo svgs"
 
-grep "\.svg$" enwiki-20200426-all-media-titles \
+grep "\.svg$" "${TMP_DIR}/${MEDIA_DUMP}" \
     | grep -i logo \
-    >svg_logos.txt
+    >"${TMP_DIR}/${LANG}-svg-logos.txt"
 #    | tail -n 10 - \
 
-echo "INFO: found $(cat svg_logos.txt | wc -l) svg logos"
+echo "INFO: found $(cat "${TMP_DIR}/${LANG}-svg-logos.txt" | wc -l) svg logos"
 
 echo '{}' \
-    | jq '.data.description|="SVG files on the English Wikipedia with logo in the name"' \
-    | jq '.handle|="wikipedia-titles"' \
+    | jq ".data.description|=\"SVG files on the ${LANG} Wikipedia with logo in the name\"" \
+    | jq ".handle|=\"wikipedia-mediatitles-${LANG}\"" \
     | jq ".lastmodified|=\"$(date -u  +%Y-%m-%dT%H:%M:%SZ)\"" \
     | jq '.logo|="https://www.vectorlogo.zone/logos/wikipedia/wikipedia-icon.svg"' \
-    | jq '.name|="Wikipedia"' \
+    | jq ".name|=\"Wikipedia ${LANG} mediatitles\"" \
     | jq '.provider|="remote"' \
     | jq '.provider_icon|="https://logosear.ch/images/remote.svg"' \
     | jq '.url|="https://en.wikipedia.org/"' \
     | jq --sort-keys . \
-    > metadata.json
-#    | jq '.images|=[]' \
+    > "${TMP_DIR}/metadata.json"
 
-echo "INFO: convert text to json"
+echo "INFO: converting text to json"
 
-cat svg_logos.txt \
+#LATER: this would be faster with a custom program instead of exec'ing md5sum once per line...
+cat "${TMP_DIR}/${LANG}-svg-logos.txt" \
     | while read -r line; do
         echo "$(printf %s "$line" | md5sum | cut -c 1-2),$line"
     done \
-    | jq --raw-input --slurp 'split("\n") | map(select(. != "")) | map( {img: ("https://upload.wikimedia.org/wikipedia/en/" + .[0:1] + "/" + .[0:2] + "/" + .[3:]), name: (.[3:-4]), src: ("https://en.wikipedia.org/wiki/File:" + .[3:])} )' \
-    > svg_logos.json
+    | jq --raw-input --slurp "split(\"\\n\") | map(select(. != \"\")) | map( {img: (\"https://upload.wikimedia.org/wikipedia/${LANG}/\" + .[0:1] + \"/\" + .[0:2] + \"/\" + .[3:]), name: (.[3:-4]), src: (\"https://${LANG}.wikipedia.org/wiki/File:\" + .[3:])} )" \
+    > "${TMP_DIR}/${LANG}-svg-logos.json"
 
 echo "INFO: merging json array into sourceData"
 
-#jq \
-#    --argjson images "$(<svg_logos.json)" \
-#    '.images = $images' \
-#    metadata.json \
-#    > sourceData.json
 jq --sort-keys \
     '.images += input' \
-    metadata.json \
-    svg_logos.json \
-    >sourceData.json
+    "${TMP_DIR}/metadata.json" \
+    "${TMP_DIR}/${LANG}-svg-logos.json" \
+    >"${OUTPUT_DIR}/${LANG}-mediatitle-sourceData.json"
 
 #    | jq -R '. | {img: (.), name: (.[0:-4]), url: ("http://abc/" + .)}'
   #"handle": "adamfairhead",
@@ -84,4 +99,4 @@ jq --sort-keys \
   #"url": "https://github.com/adamfairhead/webicons"
    
 
-echo "INFO: Finished titles at $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+echo "INFO: Finished mediatitles for ${LANG} at $(date -u +%Y-%m-%dT%H:%M:%SZ)"
