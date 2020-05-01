@@ -13,25 +13,42 @@ set -o errexit
 set -o pipefail
 set -o nounset
 
+echo "INFO: Starting titles at $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+
 LANG=${1:-BAD}
 if [ "${LANG}" == "BAD" ]; then
     echo "usage: titles.sh language [date]"
     exit 1
 fi
 
-#LATER: check that jq & curl are installed
+if ! [ -x "$(command -v jq)" ]; then
+    echo "ERROR: jq is not installed."
+    exit 2
+fi
 
-echo "INFO: Starting titles at $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+if ! [ -x "$(command -v curl)" ]; then
+    echo "ERROR: curl is not installed."
+    exit 3
+fi
 
-DATE=20200426
-#$(date -u +%Y%m%d)
-OUTPUT_DIR=./output
+#
+# load an .env file if it exists
+#
+ENV_FILE=".env"
+if [ -f "${ENV_FILE}" ]; then
+    echo "INFO: loading '${ENV_FILE}'"
+    export $(cat "${ENV_FILE}")
+fi
+
+TODAY=$(date -u +%Y%m%d)
+DATE=${DATE:-$TODAY}
+OUTPUT_DIR=${OUTPUT_DIR:-./output}
 if [ ! -d "${OUTPUT_DIR}" ]; then
     echo "INFO: creating output directory ${OUTPUT_DIR}"
     mkdir -p "${OUTPUT_DIR}"
 fi
 
-TMP_DIR=./tmp
+TMP_DIR=${TMP_DIR:-./tmp}
 if [ ! -d "${TMP_DIR}" ]; then
     echo "INFO: creating output directory ${TMP_DIR}"
     mkdir -p "${TMP_DIR}"
@@ -69,7 +86,7 @@ echo '{}' \
     | jq '.provider_icon|="https://logosear.ch/images/remote.svg"' \
     | jq '.url|="https://en.wikipedia.org/"' \
     | jq --sort-keys . \
-    > "${TMP_DIR}/metadata.json"
+    > "${TMP_DIR}/${LANG}-metadata.json"
 
 echo "INFO: converting text to json"
 
@@ -85,7 +102,7 @@ echo "INFO: merging json array into sourceData"
 
 jq --sort-keys \
     '.images += input' \
-    "${TMP_DIR}/metadata.json" \
+    "${TMP_DIR}/${LANG}-metadata.json" \
     "${TMP_DIR}/${LANG}-svg-logos.json" \
     >"${OUTPUT_DIR}/${LANG}-mediatitle-sourceData.json"
 
