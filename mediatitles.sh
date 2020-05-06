@@ -17,7 +17,7 @@ echo "INFO: Starting titles at $(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
 LANG=${1:-BAD}
 if [ "${LANG}" == "BAD" ]; then
-    echo "usage: titles.sh language [date]"
+    echo "usage: $(basename $0) language [date]"
     exit 1
 fi
 
@@ -81,10 +81,10 @@ echo '{}' \
     | jq ".handle|=\"wikipedia-mediatitles-${LANG}\"" \
     | jq ".lastmodified|=\"$(date -u  +%Y-%m-%dT%H:%M:%SZ)\"" \
     | jq '.logo|="https://www.vectorlogo.zone/logos/wikipedia/wikipedia-icon.svg"' \
-    | jq ".name|=\"Wikipedia ${LANG} mediatitles\"" \
+    | jq ".name|=\"Wikipedia ${LANG} media titles\"" \
     | jq '.provider|="remote"' \
     | jq '.provider_icon|="https://logosear.ch/images/remote.svg"' \
-    | jq '.url|="https://en.wikipedia.org/"' \
+    | jq --arg LANG "${LANG}" '.url|="https://" + $LANG + ".wikipedia.org/"' \
     | jq --sort-keys . \
     > "${TMP_DIR}/${LANG}-metadata.json"
 
