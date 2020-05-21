@@ -1,5 +1,6 @@
 # To Do
 
+* switch mediatitles.sh to Python instead of bash
 * handle redirected images
 * mediatitles - figure out what 'logo' is in each language
 * build.sh - take list of languages from env

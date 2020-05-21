@@ -40,6 +40,9 @@ echo -n "007_logo.svg" | md5sum | cut -c 1-2
 Getting the raw MediaWiki text for a topic:
 https://en.wikipedia.org/w/index.php?title=Wikipedia&action=raw
 
+Redirect data:
+https://dumps.wikimedia.org/enwiki/20200420/enwiki-20200420-redirect.sql.gz
+
 ## Useful Links
 
 * [Wikipedia API](https://en.wikipedia.org/w/api.php)
