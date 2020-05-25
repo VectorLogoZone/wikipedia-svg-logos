@@ -40,7 +40,7 @@ if [ -f "${ENV_FILE}" ]; then
     export $(cat "${ENV_FILE}")
 fi
 
-TODAY=$(date -u +%Y%m%d)
+TODAY=$(date -u --date=yesterday +%Y%m%d)
 DATE=${DATE:-$TODAY}
 OUTPUT_DIR=${OUTPUT_DIR:-./output}
 if [ ! -d "${OUTPUT_DIR}" ]; then
