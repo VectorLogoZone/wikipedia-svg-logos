@@ -10,5 +10,7 @@ See the [notes](NOTES.md) and [to-do list](TODO.md) for more information.
 
 [![bash](https://www.vectorlogo.zone/logos/gnu_bash/gnu_bash-ar21.svg)](https://www.gnu.org/software/bash/ "scripting")
 [![curl](https://www.vectorlogo.zone/logos/curl_haxx/curl_haxx-ar21.svg)](https://curl.haxx.se/)
+[![Wikimedia Commons](https://www.vectorlogo.zone/logos/wikimedia_commons/wikimedia_commons-ar21.svg)](https://commons.wikimedia.org/ "Logos")
+[![Wikipedia](https://www.vectorlogo.zone/logos/wikipedia/wikipedia-ar21.svg)](https://wikipedia.org/ "Logos")
 
 * [jq](https://stedolan.github.io/jq/)
