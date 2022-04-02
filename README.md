@@ -1,5 +1,7 @@
 # Wikipedia Logos [<img alt="Wikipedia Logo" src="https://www.vectorlogo.zone/logos/wikipedia/wikipedia-icon.svg" height="96" align="right"/>](https://wikipedia.org/)
 
+[![build](https://github.com/VectorLogoZone/wikipedia-svg-logos/actions/workflows/release.yaml/badge.svg)](https://github.com/VectorLogoZone/wikipedia-svg-logos/actions/workflows/release.yaml)
+
 This repo builds an index of all the SVG logos that are on [Wikipedia](https://wikipedia.org/) for the search engine at [LogoSear.ch](https://logosear.ch/search.html).
 
 Wikipedia [does allow hot-linking](https://commons.wikimedia.org/wiki/Commons:Reusing_content_outside_Wikimedia/technical#Hotlinking).
